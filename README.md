@@ -11,10 +11,10 @@ obj = Louvain_Method.Louvain(np_list)
 このライブラリでは、Louvain法の実行、実行後のラベルの表示、実行後のModularityの計算が可能です。
 以下は、使用例のコードです。
 
-obj.fit()
-obj.sohw()
-obj.get_label_list()
-obj.cal_modularity()
+obj.fit()\\
+obj.sohw()\\
+obj.get_label_list()\\
+obj.cal_modularity()\\
 
 fit()によってLouvain法を実行します。引数は、シード値となっており、ノードを参照する順番を決定するために用います。
 fit()の引数のデフォルトの値は-1となっており、その場合にはデータ番号の順番で参照します。
