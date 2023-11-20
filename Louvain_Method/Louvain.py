@@ -58,7 +58,7 @@ class Louvain:
         self.before_cluster_list = np.array([])
         self.m = self.data_list.sum() / 2
 
-    def fit(self, random_select = False):
+    def fit(self, seed = -1):
         #初期のデータ構造を作成
         for i, data in enumerate(self.data_list):
             edge_list = np.where(data != 0)[0]
@@ -72,10 +72,11 @@ class Louvain:
 
         self.before_cluster_list = self.cluster_list
 
-        if random_select:
+        if seed != -1:
             while True:
                 check = False #ノードの移動を確認する変数
-                select_list = random.sample(range(self.node_list.shape[0]), self.node_list.shape[0])
+                np.random.seed(seed)
+                select_list = np.random.permutation(self.node_list.shape[0])
                 for node in self.node_list[select_list]:
                     check += self.move_node(node)
 
@@ -107,8 +108,16 @@ class Louvain:
         k_i = node.get_k_i() #ノードのk_i
         #ノードに隣接しているクラスタと，エッジの重みを取得
         k_i_in_dict = {}
+        self_loop = False #自己ループの有無を管理する
         for ad_node, ad_weight in zip(node.get_ad_node_list(), node.get_edge_weight_list()):
-            ad_cluster = self.node_list[ad_node].get_af_cluster()
+            ad_node_obj = self.node_list[ad_node]
+
+            #自己ループがあるかを確認
+            if ad_node_obj == node:
+                self_loop = True
+                self_loop_weight = ad_weight
+
+            ad_cluster = ad_node_obj.get_af_cluster()
             if ad_cluster in k_i_in_dict:
                 k_i_in_dict[ad_cluster] += ad_weight
 
@@ -123,7 +132,11 @@ class Louvain:
         else:
             sigma_tot = node_cluster.get_sigma_tot() - k_i
             if node_cluster in k_i_in_dict:
-                k_i_in = k_i_in_dict.pop(node_cluster)
+                if self_loop == False:
+                    k_i_in = k_i_in_dict.pop(node_cluster)
+
+                else:
+                    k_i_in = k_i_in_dict.pop(node_cluster) - self_loop_weight
 
             else:
                 k_i_in = 0
